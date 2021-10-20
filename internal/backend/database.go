@@ -15,9 +15,9 @@ type Thread struct {
 }
 
 type Message struct {
-	Sender string
-	Time   string
-	Text   string
+	Sent bool
+	Time time.Time
+	Text string
 }
 
 var (
@@ -98,9 +98,10 @@ func Messages(id string) (messages []Message) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var sender, time, text string
-		if err = rows.Scan(&sender, &time, &text); err == nil {
-			messages = append(messages, Message{sender, time, text})
+		var sender, timestamp, text string
+		if err = rows.Scan(&sender, &timestamp, &text); err == nil {
+			t, _ := time.Parse(time.RFC3339, timestamp)
+			messages = append(messages, Message{sender == "self", t.Local(), text})
 		}
 	}
 	return
